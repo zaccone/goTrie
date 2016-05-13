@@ -37,16 +37,23 @@ func (t *Trie) Add(s string) bool {
 		return true
 	}
 
-	letter, size := utf8.DecodeRuneInString(s)
+	var childNode *Trie = t
 
-	if _, ok := t.letters[letter]; !ok {
-		t.letters[letter] = New()
-		t.children++
+	for pos := 0; pos < len(s); {
+		letter, size := utf8.DecodeRuneInString(s[pos:])
+		pos += size
+
+		if _, ok := childNode.letters[letter]; !ok {
+			childNode.letters[letter] = New()
+			childNode.children++
+		}
+
+		childNode, _ = childNode.letters[letter]
 	}
 
-	trieChild := t.letters[letter]
+	childNode.end = true
 
-	return trieChild.Add(s[size:])
+	return true
 
 }
 
@@ -60,11 +67,16 @@ func (t *Trie) Check(s string) bool {
 		return t.IsWord()
 	}
 
-	letter, size := utf8.DecodeRuneInString(s)
+	var childNode *Trie = t
+	var ok bool
 
-	if childNode, ok := t.letters[letter]; !ok {
-		return false
-	} else {
-		return childNode.Check(s[size:])
+	for pos := 0; pos < len(s); {
+		letter, size := utf8.DecodeRuneInString(s[pos:])
+		pos += size
+		if childNode, ok = childNode.letters[letter]; !ok {
+			return false
+		}
 	}
+
+	return childNode != nil && childNode.IsWord()
 }
