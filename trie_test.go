@@ -20,12 +20,13 @@ func TestWordAdding(t *testing.T) {
 		if result == false {
 			t.Errorf("Adding word %s failed\n", word)
 		}
+	}
 
+	for _, word := range words {
 		wordCheck := trie.Check(word)
 		if wordCheck == false {
 			t.Errorf("Couldn't find word %s\n", word)
 		}
-
 	}
 
 }
