@@ -57,14 +57,14 @@ func (t *Trie) Add(s string) bool {
 
 }
 
-// Check checks if the string is a word stored in the Trie datastructure.
-func (t *Trie) Check(s string) bool {
+// Get checks if the string is a word stored in the Trie datastructure.
+func (t *Trie) Get(s string) *Trie {
 	if t == nil {
-		return false
+		return nil
 	}
 
 	if len(s) == 0 {
-		return t.IsWord()
+		return t
 	}
 
 	var childNode *Trie = t
@@ -74,9 +74,50 @@ func (t *Trie) Check(s string) bool {
 		letter, size := utf8.DecodeRuneInString(s[pos:])
 		pos += size
 		if childNode, ok = childNode.letters[letter]; !ok {
-			return false
+			return nil
 		}
 	}
 
-	return childNode != nil && childNode.IsWord()
+	return childNode
+}
+
+// HasWord looks for a word and return True if the word is present, false otherwise.
+func (t *Trie) Has(s string) bool {
+	if t == nil {
+		return false
+	}
+
+	node := t.Get(s)
+	return node != nil && node.IsWord()
+
+}
+
+// GetwordsFromPrefix returns list of words starting with provided prefix
+func (t *Trie) GetWordsFromPrefix(s string) []string {
+	result := make([]string, 0, 1)
+	if t == nil {
+		return result
+	}
+
+	node := t.Get(s)
+	if node == nil {
+		return result
+	}
+
+	result = node.getWordsFromPrefix(s)
+	return result
+}
+
+// getWordsFromPrefix is internally used by GetWordsFromPrefix method.
+// It calls itself recursively and adds a word if the checked node is marked as end of the word
+func (t *Trie) getWordsFromPrefix(prefix string) []string {
+	result := make([]string, 0, 0)
+	if t.IsWord() {
+		result = append(result, prefix)
+	}
+	for k, v := range t.letters {
+		subresult := v.getWordsFromPrefix(prefix + string(k))
+		result = append(result, subresult...)
+	}
+	return result
 }

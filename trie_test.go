@@ -1,6 +1,7 @@
 package goTrie
 
 import "testing"
+import "sort"
 
 func TestgoTrie(t *testing.T) {
 	trie := New()
@@ -23,7 +24,7 @@ func TestWordAdding(t *testing.T) {
 	}
 
 	for _, word := range words {
-		wordCheck := trie.Check(word)
+		wordCheck := trie.Has(word)
 		if wordCheck == false {
 			t.Errorf("Couldn't find word %s\n", word)
 		}
@@ -36,12 +37,12 @@ func TestTrieErrorHandling(t *testing.T) {
 
 	trie.Add("abcd")
 
-	r := trie.Check("abc")
+	r := trie.Has("abc")
 	if r != false {
 		t.Errorf("Got %v instead of %t", r, !r)
 	}
 
-	r = trie.Check("yyz")
+	r = trie.Has("yyz")
 	if r != false {
 		t.Errorf("Got %v instead of %t", r, !r)
 	}
@@ -56,11 +57,46 @@ func TestOperationsOnNilTries(t *testing.T) {
 		t.Error("Operation on nil trie wasn't catched")
 	}
 
-	if ok = trie.Check("sometext"); ok {
+	if ok = trie.Has("sometext"); ok {
 		t.Error("Operation on nil trie wasn't catched")
 	}
 
 	if ok = trie.IsWord(); ok {
 		t.Error("Operation on nil trie wasn't catched")
 	}
+}
+
+func TestFuzzyMatching(t *testing.T) {
+	trie := New()
+	expected := []string{"abcdefgh", "abcdefg",
+		"abcdef", "abcde"}
+
+	for _, word := range expected {
+		trie.Add(word)
+	}
+
+	// add words that don't start with prefix, however they start with same letters
+	// ('ab' in this particular case, but not with 'abc'). Point is those words should not be included in the
+	// fuzzy search results.
+	trie.Add("abdefgh")
+	trie.Add("abdcefgh")
+
+	const prefix = "abc"
+	result := trie.GetWordsFromPrefix(prefix)
+
+	sort.Strings(result)
+	sort.Strings(expected)
+
+	if len(result) != len(expected) {
+		t.Errorf("Lengths not equal, exp: %d, got: %d\n",
+			len(expected), len(result))
+	}
+
+	for i := 0; i < len(expected); i++ {
+		if expected[i] != result[i] {
+			t.Errorf("Words not equal, exp: %s, got %s",
+				expected[i], result[i])
+		}
+	}
+
 }
