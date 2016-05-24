@@ -66,20 +66,27 @@ func TestOperationsOnNilTries(t *testing.T) {
 	}
 }
 
-func TestFuzzyMatching(t *testing.T) {
+func prepareTrie(expected []string, extra []string) *Trie {
 	trie := New()
-	expected := []string{"abcdefgh", "abcdefg",
-		"abcdef", "abcde"}
 
 	for _, word := range expected {
 		trie.Add(word)
 	}
 
-	// add words that don't start with prefix, however they start with same letters
-	// ('ab' in this particular case, but not with 'abc'). Point is those words should not be included in the
-	// fuzzy search results.
-	trie.Add("abdefgh")
-	trie.Add("abdcefgh")
+	for _, word := range extra {
+		trie.Add(word)
+	}
+
+	return trie
+}
+
+func TestFuzzyMatching(t *testing.T) {
+
+	expected := []string{"abcdefgh", "abcdefg",
+		"abcdef", "abcde"}
+	noise := []string{"azazel", "amiko", "abolicja"}
+
+	trie := prepareTrie(expected, noise)
 
 	const prefix = "abc"
 	result := trie.GetWordsFromPrefix(prefix)
@@ -98,5 +105,25 @@ func TestFuzzyMatching(t *testing.T) {
 				expected[i], result[i])
 		}
 	}
+}
 
+func TestWordCounting(t *testing.T) {
+
+	expected := []string{"abcdefgh", "abcdefg",
+		"abcdef", "abcde"}
+	noise := []string{"azazel", "amiko", "abolicja"}
+
+	trie := prepareTrie(expected, noise)
+
+	const prefix = "abc"
+	node := trie.Get(prefix)
+	if node == nil {
+		t.Errorf("Trie node is nil")
+	}
+
+	if node.children != uint32(len(expected)) {
+		t.Errorf(
+			"Cardinality mismatch: expected cardinality: %d vs node.childen: %d\n",
+			len(expected), node.children)
+	}
 }
