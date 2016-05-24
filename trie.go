@@ -47,7 +47,7 @@ func (t *Trie) Add(s string) bool {
 			childNode.letters[letter] = New()
 		}
 
-		childNode, _ = childNode.letters[letter]
+		childNode = childNode.letters[letter]
 		// TODO(marek): Currently adding same word twice will count it twice.
 		// Perhaps it's not what we really want.
 		childNode.children++
