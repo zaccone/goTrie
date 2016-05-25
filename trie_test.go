@@ -50,7 +50,7 @@ func TestTrieErrorHandling(t *testing.T) {
 }
 
 func TestOperationsOnNilTries(t *testing.T) {
-	var trie *Trie = nil
+	var trie *Trie
 	var ok bool
 
 	if ok = trie.Add("sometext"); ok {
@@ -63,6 +63,10 @@ func TestOperationsOnNilTries(t *testing.T) {
 
 	if ok = trie.IsWord(); ok {
 		t.Error("Operation on nil trie wasn't catched")
+	}
+
+	if val := trie.Children(); val != uint32(0) {
+		t.Errorf("Nil trie should return uint32(0), got %d instead\n", val)
 	}
 }
 
@@ -121,9 +125,9 @@ func TestWordCounting(t *testing.T) {
 		t.Errorf("Trie node is nil")
 	}
 
-	if node.children != uint32(len(expected)) {
+	if node.Children() != uint32(len(expected)) {
 		t.Errorf(
 			"Cardinality mismatch: expected cardinality: %d vs node.childen: %d\n",
-			len(expected), node.children)
+			len(expected), node.Children())
 	}
 }

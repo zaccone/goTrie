@@ -2,6 +2,7 @@ package goTrie
 
 import "unicode/utf8"
 
+// Trie defines a Trie node representation
 type Trie struct {
 	end      bool
 	letters  map[rune]*Trie
@@ -15,6 +16,14 @@ func New() *Trie {
 		letters:  make(map[rune]*Trie),
 		children: 0,
 	}
+}
+
+// Children returns number of different suffixes, starting from this node.
+func (t *Trie) Children() uint32 {
+	if t == nil {
+		return uint32(0)
+	}
+	return t.children
 }
 
 // IsWord returns true if the node is also indicator for a whole word,
@@ -37,7 +46,7 @@ func (t *Trie) Add(s string) bool {
 		return true
 	}
 
-	var childNode *Trie = t
+	var childNode = t
 
 	for pos := 0; pos < len(s); {
 		letter, size := utf8.DecodeRuneInString(s[pos:])
@@ -69,7 +78,7 @@ func (t *Trie) Get(s string) *Trie {
 		return t
 	}
 
-	var childNode *Trie = t
+	var childNode = t
 	var ok bool
 
 	for pos := 0; pos < len(s); {
@@ -83,7 +92,7 @@ func (t *Trie) Get(s string) *Trie {
 	return childNode
 }
 
-// HasWord looks for a word and return True if the word is present, false otherwise.
+// Has looks for a word and return True if the word is present, false otherwise.
 func (t *Trie) Has(s string) bool {
 	if t == nil {
 		return false
@@ -94,7 +103,7 @@ func (t *Trie) Has(s string) bool {
 
 }
 
-// GetwordsFromPrefix returns list of words starting with provided prefix
+// GetWordsFromPrefix returns list of words starting with provided prefix
 func (t *Trie) GetWordsFromPrefix(s string) []string {
 	result := make([]string, 0, 1)
 	if t == nil {
