@@ -52,21 +52,30 @@ func TestTrieErrorHandling(t *testing.T) {
 func TestOperationsOnNilTries(t *testing.T) {
 	var trie *Trie
 	var ok bool
+	const prefix = "sometext"
 
-	if ok = trie.Add("sometext"); ok {
-		t.Error("Operation on nil trie wasn't catched")
+	if ok = trie.Add(prefix); ok {
+		t.Error("Trie.Add(): Operation on nil trie wasn't catched")
 	}
 
-	if ok = trie.Has("sometext"); ok {
-		t.Error("Operation on nil trie wasn't catched")
+	if ok = trie.Has(prefix); ok {
+		t.Error("Trie.Has(): Operation on nil trie wasn't catched")
 	}
 
 	if ok = trie.IsWord(); ok {
-		t.Error("Operation on nil trie wasn't catched")
+		t.Error("Trie.IsWord(): Operation on nil trie wasn't catched")
+	}
+
+	if node := trie.Get(prefix); node != nil {
+		t.Error("Trie.Get(): Operation on nil trie should return nil")
 	}
 
 	if val := trie.Children(); val != uint32(0) {
-		t.Errorf("Nil trie should return uint32(0), got %d instead\n", val)
+		t.Errorf("Trie.Children(): Nil trie should return uint32(0), got %d instead\n", val)
+	}
+
+	if words := trie.GetWordsFromPrefix(prefix); len(words) != 0 {
+		t.Errorf("Trie.GetWordsFromPrefix(): Operation on nil trie should return empty []string slice, got %d instead\n", len(words))
 	}
 }
 
@@ -111,6 +120,36 @@ func TestFuzzyMatching(t *testing.T) {
 	}
 }
 
+func TestFuzzyMatchingNotFound(t *testing.T) {
+	trie := New()
+	words := trie.GetWordsFromPrefix("abrakadabra")
+	if len(words) != 0 {
+		t.Errorf("Trie.GetWordsFromPrefix was expected to return empty slice, got %d elements instead\n", len(words))
+	}
+}
+
+func TestAddOnEmptyString(t *testing.T) {
+	const word = "" // empty string
+	trie := New()
+	addResult := trie.Add(word)
+
+	if addResult != true {
+		t.Errorf("Trie.Add(): Expected result to be true")
+	}
+
+	if trie.IsWord() != true {
+		t.Errorf("Trie.Add(): For empty string expected set root node as end of a word")
+	}
+
+}
+
+func TestGetOnEmptyString(t *testing.T) {
+	trie := New()
+	node := trie.Get("")
+	if node != trie {
+		t.Errorf("Expected return node to be Root node")
+	}
+}
 func TestWordCounting(t *testing.T) {
 
 	expected := []string{"abcdefgh", "abcdefg",
